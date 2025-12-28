@@ -3,24 +3,20 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Update\CheckUpdateRequest;
+use App\Http\Requests\Api\Update\DownloadUpdateRequest;
 use App\Models\License;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class UpdateController extends Controller
 {
     /**
      * Check for updates for a product.
      */
-    public function check(Request $request): JsonResponse
+    public function check(CheckUpdateRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'license_key' => 'required|string',
-            'domain' => 'required|string',
-            'product_slug' => 'required|string',
-            'current_version' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         $product = Product::where('slug', $validated['product_slug'])
             ->where('is_active', true)
@@ -77,13 +73,9 @@ class UpdateController extends Controller
     /**
      * Download the update package.
      */
-    public function download(Request $request): JsonResponse
+    public function download(DownloadUpdateRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'license_key' => 'required|string',
-            'domain' => 'required|string',
-            'product_slug' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         $product = Product::where('slug', $validated['product_slug'])
             ->where('is_active', true)

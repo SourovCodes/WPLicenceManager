@@ -3,22 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\License\ActivateLicenseRequest;
+use App\Http\Requests\Api\License\DeactivateLicenseRequest;
+use App\Http\Requests\Api\License\LicenseStatusRequest;
+use App\Http\Requests\Api\License\ValidateLicenseRequest;
 use App\Models\License;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class LicenseController extends Controller
 {
     /**
      * Activate a license on a domain.
      */
-    public function activate(Request $request): JsonResponse
+    public function activate(ActivateLicenseRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'license_key' => 'required|string',
-            'domain' => 'required|string',
-            'product_slug' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         $license = License::with('product')
             ->where('license_key', $validated['license_key'])
@@ -85,13 +84,9 @@ class LicenseController extends Controller
     /**
      * Deactivate a license from a domain.
      */
-    public function deactivate(Request $request): JsonResponse
+    public function deactivate(DeactivateLicenseRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'license_key' => 'required|string',
-            'domain' => 'required|string',
-            'product_slug' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         $license = License::with('currentActivation')
             ->where('license_key', $validated['license_key'])
@@ -124,13 +119,9 @@ class LicenseController extends Controller
     /**
      * Validate a license.
      */
-    public function validate(Request $request): JsonResponse
+    public function validate(ValidateLicenseRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'license_key' => 'required|string',
-            'domain' => 'required|string',
-            'product_slug' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         $license = License::with(['product', 'currentActivation'])
             ->where('license_key', $validated['license_key'])
@@ -160,12 +151,9 @@ class LicenseController extends Controller
     /**
      * Get license status/info.
      */
-    public function status(Request $request): JsonResponse
+    public function status(LicenseStatusRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'license_key' => 'required|string',
-            'product_slug' => 'required|string',
-        ]);
+        $validated = $request->validated();
 
         $license = License::with(['product', 'currentActivation'])
             ->where('license_key', $validated['license_key'])

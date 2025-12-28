@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Premium\ProcessActionRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -41,12 +42,9 @@ class PremiumApiController extends Controller
     /**
      * Mock premium API endpoint - Example: Process premium action.
      */
-    public function processAction(Request $request): JsonResponse
+    public function processAction(ProcessActionRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'action' => 'required|string',
-            'payload' => 'nullable|array',
-        ]);
+        $validated = $request->validated();
 
         $license = $request->attributes->get('license');
 
