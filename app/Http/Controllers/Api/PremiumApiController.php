@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Premium\CheckSftpCredentialsRequest;
 use App\Http\Requests\Api\Premium\UploadProductsRequest;
 use App\Jobs\UploadCsvToSftp;
 use App\Models\CsvUpload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use phpseclib3\Net\SFTP;
 
 class PremiumApiController extends Controller
 {
@@ -107,5 +109,60 @@ class PremiumApiController extends Controller
                 'processed_at' => $upload->processed_at?->toIso8601String(),
             ]),
         ]);
+    }
+
+    /**
+     * Check if the provided SFTP credentials are valid.
+     */
+    public function checkSftpCredentials(CheckSftpCredentialsRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        $host = $validated['sftp_host'];
+        $port = $validated['sftp_port'] ?? 22;
+        $username = $validated['sftp_username'];
+        $password = $validated['sftp_password'];
+        $remotePath = $validated['sftp_remote_path'] ?? null;
+
+        try {
+            $sftp = new SFTP($host, $port, 10);
+
+            if (! $sftp->login($username, $password)) {
+                return response()->json([
+                    'success' => false,
+                    'valid' => false,
+                    'message' => 'SFTP authentication failed. Please check your credentials.',
+                ], 401);
+            }
+
+            $response = [
+                'success' => true,
+                'valid' => true,
+                'message' => 'SFTP credentials are valid.',
+                'data' => [
+                    'host' => $host,
+                    'port' => $port,
+                    'username' => $username,
+                ],
+            ];
+
+            if ($remotePath) {
+                $pathExists = $sftp->is_dir($remotePath);
+                $response['data']['remote_path'] = $remotePath;
+                $response['data']['remote_path_exists'] = $pathExists;
+
+                if (! $pathExists) {
+                    $response['message'] = 'SFTP credentials are valid, but the specified remote path does not exist.';
+                }
+            }
+
+            return response()->json($response);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'valid' => false,
+                'message' => 'Failed to connect to SFTP server: '.$e->getMessage(),
+            ], 422);
+        }
     }
 }

@@ -34,4 +34,5 @@ Route::prefix('premium')->middleware('valid.license')->group(function () {
     Route::post('/upload-products', [PremiumApiController::class, 'uploadProducts']);
     Route::get('/upload-status/{uploadId}', [PremiumApiController::class, 'uploadStatus']);
     Route::get('/upload-history', [PremiumApiController::class, 'uploadHistory']);
+    Route::post('/check-sftp', [PremiumApiController::class, 'checkSftpCredentials']);
 });
