@@ -31,7 +31,7 @@ Route::prefix('update')->group(function () {
 // Premium API Routes (Protected by valid license middleware)
 // Only accessible with valid license + product has_api_access = true
 Route::prefix('premium')->middleware('valid.license')->group(function () {
-    Route::get('/data', [PremiumApiController::class, 'getData']);
-    Route::post('/action', [PremiumApiController::class, 'processAction']);
-    Route::get('/settings', [PremiumApiController::class, 'getSettings']);
+    Route::post('/upload-products', [PremiumApiController::class, 'uploadProducts']);
+    Route::get('/upload-status/{uploadId}', [PremiumApiController::class, 'uploadStatus']);
+    Route::get('/upload-history', [PremiumApiController::class, 'uploadHistory']);
 });
