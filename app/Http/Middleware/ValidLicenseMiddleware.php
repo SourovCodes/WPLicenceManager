@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\License;
+use App\Models\Product;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,15 +36,24 @@ class ValidLicenseMiddleware
             ], 401);
         }
 
+        $product = Product::where('slug', $productSlug)->first();
+
+        if (! $product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found.',
+            ], 404);
+        }
+
         $license = License::with(['product', 'currentActivation'])
             ->where('license_key', $licenseKey)
-            ->whereHas('product', fn ($q) => $q->where('slug', $productSlug))
+            ->where('product_id', $product->id)
             ->first();
 
         if (! $license) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid license key or product.',
+                'message' => 'Invalid license key.',
             ], 401);
         }
 

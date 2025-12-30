@@ -99,7 +99,8 @@ curl -X POST https://wplicence.jonakyds.com/api/license/activate \
 
 | Status | Message                                              |
 |--------|------------------------------------------------------|
-| 404    | Invalid license key or product.                      |
+| 404    | Product not found.                                   |
+| 404    | Invalid license key.                                 |
 | 403    | This license has been revoked.                       |
 | 403    | This license has expired.                            |
 | 403    | Maximum domain changes reached. Please contact support. |
@@ -145,7 +146,8 @@ curl -X POST https://wplicence.jonakyds.com/api/license/deactivate \
 
 | Status | Message                                  |
 |--------|------------------------------------------|
-| 404    | Invalid license key or product.          |
+| 404    | Product not found.                       |
+| 404    | Invalid license key.                     |
 | 400    | License is not activated on this domain. |
 
 ---
@@ -226,9 +228,10 @@ curl -X POST https://wplicence.jonakyds.com/api/license/validate \
 
 **Error Response:**
 
-| Status | Message                         |
-|--------|---------------------------------|
-| 404    | Invalid license key or product. |
+| Status | Message              |
+|--------|----------------------|
+| 404    | Product not found.   |
+| 404    | Invalid license key. |
 
 ---
 
@@ -280,9 +283,10 @@ curl -X POST https://wplicence.jonakyds.com/api/license/status \
 
 **Error Response:**
 
-| Status | Message                         |
-|--------|---------------------------------|
-| 404    | Invalid license key or product. |
+| Status | Message              |
+|--------|----------------------|
+| 404    | Product not found.   |
+| 404    | Invalid license key. |
 
 ---
 
@@ -440,7 +444,7 @@ All error responses follow this structure:
 | 200         | Request successful                                    |
 | 400         | Bad request (invalid domain, already deactivated, etc.) |
 | 403         | Forbidden (revoked, expired, domain limit reached)    |
-| 404         | Not found (invalid license key or product)            |
+| 404         | Not found (invalid license key or product not found)  |
 | 422         | Validation error (missing or invalid parameters)      |
 | 500         | Server error                                          |
 

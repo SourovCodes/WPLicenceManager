@@ -19,15 +19,16 @@ class LicenseController extends Controller
     {
         $validated = $request->validated();
 
-        $license = License::with('product')
-            ->where('license_key', $validated['license_key'])
-            ->whereHas('product', fn ($q) => $q->where('slug', $validated['product_slug']))
-            ->first();
+        $errorResponse = $this->findLicenseOrFail($validated['license_key'], $validated['product_slug']);
+        if ($errorResponse instanceof JsonResponse) {
+            return $errorResponse;
+        }
+        $license = $errorResponse;
 
         if (! $license) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid license key or product.',
+                'message' => 'Invalid license key.',
             ], 404);
         }
 
@@ -88,17 +89,11 @@ class LicenseController extends Controller
     {
         $validated = $request->validated();
 
-        $license = License::with('currentActivation')
-            ->where('license_key', $validated['license_key'])
-            ->whereHas('product', fn ($q) => $q->where('slug', $validated['product_slug']))
-            ->first();
-
-        if (! $license) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid license key or product.',
-            ], 404);
+        $errorResponse = $this->findLicenseOrFail($validated['license_key'], $validated['product_slug'], ['currentActivation']);
+        if ($errorResponse instanceof JsonResponse) {
+            return $errorResponse;
         }
+        $license = $errorResponse;
 
         $currentActivation = $license->currentActivation;
         if (! $currentActivation || $currentActivation->domain !== $validated['domain']) {
@@ -123,18 +118,11 @@ class LicenseController extends Controller
     {
         $validated = $request->validated();
 
-        $license = License::with(['product', 'currentActivation'])
-            ->where('license_key', $validated['license_key'])
-            ->whereHas('product', fn ($q) => $q->where('slug', $validated['product_slug']))
-            ->first();
-
-        if (! $license) {
-            return response()->json([
-                'success' => false,
-                'valid' => false,
-                'message' => 'Invalid license key or product.',
-            ], 404);
+        $errorResponse = $this->findLicenseOrFail($validated['license_key'], $validated['product_slug'], ['product', 'currentActivation']);
+        if ($errorResponse instanceof JsonResponse) {
+            return $errorResponse;
         }
+        $license = $errorResponse;
 
         $isValid = $license->isValid()
             && $license->currentActivation
@@ -155,22 +143,48 @@ class LicenseController extends Controller
     {
         $validated = $request->validated();
 
-        $license = License::with(['product', 'currentActivation'])
-            ->where('license_key', $validated['license_key'])
-            ->whereHas('product', fn ($q) => $q->where('slug', $validated['product_slug']))
-            ->first();
-
-        if (! $license) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid license key or product.',
-            ], 404);
+        $errorResponse = $this->findLicenseOrFail($validated['license_key'], $validated['product_slug'], ['product', 'currentActivation']);
+        if ($errorResponse instanceof JsonResponse) {
+            return $errorResponse;
         }
+        $license = $errorResponse;
 
         return response()->json([
             'success' => true,
             'license' => $this->formatLicenseResponse($license),
         ]);
+    }
+
+    /**
+     * Find a license by key and product slug, or return an error response.
+     *
+     * @param  array<string>  $with
+     * @return License|JsonResponse
+     */
+    private function findLicenseOrFail(string $licenseKey, string $productSlug, array $with = ['product'])
+    {
+        $product = \App\Models\Product::where('slug', $productSlug)->first();
+
+        if (! $product) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Product not found.',
+            ], 404);
+        }
+
+        $license = License::with($with)
+            ->where('license_key', $licenseKey)
+            ->where('product_id', $product->id)
+            ->first();
+
+        if (! $license) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid license key.',
+            ], 404);
+        }
+
+        return $license;
     }
 
     /**
