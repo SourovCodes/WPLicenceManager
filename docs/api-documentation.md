@@ -356,7 +356,9 @@ curl -X POST https://wplicence.jonakyds.com/api/update/check \
 |--------|----------------------------------------------------|
 | 404    | Product not found.                                 |
 | 403    | Invalid license key.                               |
-| 403    | License is not valid. Please renew your license.   |
+| 403    | License is inactive.                               |
+| 403    | License has expired. Please renew your license.    |
+| 403    | License has been revoked.                          |
 | 403    | License is not activated on this domain.           |
 
 **Note:** Products that don't require a license can still check for updates without a valid license.

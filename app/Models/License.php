@@ -112,6 +112,23 @@ class License extends Model
         return $this->isActive() && ! $this->isExpired();
     }
 
+    public function getInvalidReason(): string
+    {
+        if ($this->status === 'inactive') {
+            return 'License is inactive.';
+        }
+
+        if ($this->status === 'revoked') {
+            return 'License has been revoked.';
+        }
+
+        if ($this->isExpired()) {
+            return 'License has expired. Please renew your license.';
+        }
+
+        return 'License is not valid.';
+    }
+
     public function canChangeDomain(): bool
     {
         return $this->domain_changes_used < $this->max_domain_changes;

@@ -60,7 +60,7 @@ class ValidLicenseMiddleware
         if (! $license->isValid()) {
             return response()->json([
                 'success' => false,
-                'message' => 'License is not valid.',
+                'message' => $license->getInvalidReason(),
                 'status' => $license->status,
                 'expires_at' => $license->expires_at?->toIso8601String(),
             ], 403);

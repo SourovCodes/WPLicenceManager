@@ -51,7 +51,7 @@ class UpdateController extends Controller
         if (! $license->isValid()) {
             return response()->json([
                 'success' => false,
-                'message' => 'License is not valid. Please renew your license.',
+                'message' => $license->getInvalidReason(),
                 'update_available' => false,
                 'license_status' => $license->status,
                 'expires_at' => $license->expires_at?->toIso8601String(),
